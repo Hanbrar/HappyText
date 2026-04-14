@@ -1,9 +1,8 @@
 import threading
 import tkinter as tk
-from tkinter import messagebox
-import customtkinter as ctk
 import pyperclip
 import pyautogui
+import customtkinter as ctk
 
 import ai_handler
 from clipboard_utils import replace_selected_text
@@ -12,8 +11,8 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 POPUP_WIDTH = 420
-POPUP_HEIGHT = 320
-PREVIEW_MAX = 120  # characters shown from original text
+POPUP_HEIGHT = 300
+PREVIEW_MAX = 120
 
 
 def _truncate(text: str, max_len: int = PREVIEW_MAX) -> str:
@@ -45,12 +44,11 @@ class PopupWindow:
 
     def _build_ui(self):
         # Header
-        header = ctk.CTkLabel(
+        ctk.CTkLabel(
             self.root,
             text="CleanWriteAI",
             font=ctk.CTkFont(size=16, weight="bold"),
-        )
-        header.pack(pady=(12, 4))
+        ).pack(pady=(12, 4))
 
         # Original text preview
         preview_frame = ctk.CTkFrame(self.root, fg_color="transparent")
@@ -62,17 +60,16 @@ class PopupWindow:
             text_color="gray",
             anchor="w",
         ).pack(anchor="w")
-        self.preview_label = ctk.CTkLabel(
+        ctk.CTkLabel(
             preview_frame,
             text=_truncate(self.original_text),
             font=ctk.CTkFont(size=12),
             wraplength=390,
             justify="left",
             anchor="w",
-        )
-        self.preview_label.pack(anchor="w")
+        ).pack(anchor="w")
 
-        # Action buttons row
+        # Action buttons
         btn_frame = ctk.CTkFrame(self.root, fg_color="transparent")
         btn_frame.pack(pady=6)
         for label, action in [("Proofread", "proofread"), ("Rewrite", "rewrite")]:
@@ -95,14 +92,14 @@ class PopupWindow:
         ).pack(anchor="w")
         self.result_box = ctk.CTkTextbox(
             result_frame,
-            height=80,
+            height=75,
             font=ctk.CTkFont(size=12),
             wrap="word",
             state="disabled",
         )
         self.result_box.pack(fill="x")
 
-        # Status label (loading / error)
+        # Status label
         self.status_label = ctk.CTkLabel(
             self.root,
             text="",
@@ -111,7 +108,7 @@ class PopupWindow:
         )
         self.status_label.pack(pady=(0, 4))
 
-        # Bottom action buttons
+        # Bottom buttons
         bottom_frame = ctk.CTkFrame(self.root, fg_color="transparent")
         bottom_frame.pack(pady=(0, 10))
         self.replace_btn = ctk.CTkButton(
@@ -143,7 +140,7 @@ class PopupWindow:
         ).pack(side="left", padx=6)
 
     def _run_action(self, action: str):
-        self._set_status("Working…")
+        self._set_status("Running… (first use downloads model ~300MB)")
         self._set_result("")
         self.replace_btn.configure(state="disabled")
         self.copy_btn.configure(state="disabled")
@@ -152,10 +149,8 @@ class PopupWindow:
             try:
                 if action == "proofread":
                     result = ai_handler.proofread(self.original_text)
-                elif action == "rewrite":
-                    result = ai_handler.rewrite(self.original_text)
                 else:
-                    result = ""
+                    result = ai_handler.rewrite(self.original_text)
                 self.result_text = result
                 self.root.after(0, lambda: self._on_result(result))
             except Exception as e:
@@ -200,5 +195,4 @@ class PopupWindow:
 
 
 def show_popup(original_text: str):
-    """Open the popup window. Call from any thread — creates its own Tk mainloop."""
     PopupWindow(original_text).show()

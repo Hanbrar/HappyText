@@ -11,6 +11,8 @@ pyinstaller ^
   --name CleanWriteAI ^
   --icon assets\icon.ico ^
   --add-data "assets;assets" ^
+  --collect-all transformers ^
+  --collect-all tokenizers ^
   main.py
 
 echo.

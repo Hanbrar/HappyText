@@ -21,11 +21,11 @@ def save_config(config: dict):
         json.dump(config, f, indent=2)
 
 
-def get_api_key() -> str | None:
-    return load_config().get("api_key")
+def is_first_launch() -> bool:
+    return not os.path.exists(CONFIG_PATH)
 
 
-def set_api_key(key: str):
+def mark_launched():
     config = load_config()
-    config["api_key"] = key.strip()
+    config["launched"] = True
     save_config(config)

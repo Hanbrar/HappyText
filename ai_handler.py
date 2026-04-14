@@ -1,49 +1,55 @@
-import anthropic
-from config import get_api_key
+"""
+Local AI inference via Hugging Face Transformers.
+Models are downloaded once on first use and cached locally by HF.
+"""
+import threading
+from transformers import pipeline
 
-MODEL = "claude-haiku-4-5-20251001"
+# Model identifiers
+MODEL_GRAMMAR = "pszemraj/flan-t5-large-grammar-synthesis"
+MODEL_PARAPHRASE = "Vamsi/T5_Paraphrase_Paws"
+
+# Lazy-loaded pipelines — initialized on first use
+_grammar_pipe = None
+_paraphrase_pipe = None
+_lock = threading.Lock()
 
 
-def _client() -> anthropic.Anthropic:
-    key = get_api_key()
-    if not key:
-        raise ValueError("No API key configured.")
-    return anthropic.Anthropic(api_key=key)
+def _get_grammar_pipe():
+    global _grammar_pipe
+    if _grammar_pipe is None:
+        with _lock:
+            if _grammar_pipe is None:
+                _grammar_pipe = pipeline(
+                    "text2text-generation",
+                    model=MODEL_GRAMMAR,
+                )
+    return _grammar_pipe
 
 
-def _call(prompt: str, text: str) -> str:
-    client = _client()
-    msg = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        system="You are a writing assistant. Return only the requested output — no explanation, no preamble, no quotes.",
-        messages=[{"role": "user", "content": f"{prompt}\n\n{text}"}],
-    )
-    return msg.content[0].text.strip()
+def _get_paraphrase_pipe():
+    global _paraphrase_pipe
+    if _paraphrase_pipe is None:
+        with _lock:
+            if _paraphrase_pipe is None:
+                _paraphrase_pipe = pipeline(
+                    "text2text-generation",
+                    model=MODEL_PARAPHRASE,
+                )
+    return _paraphrase_pipe
 
 
 def proofread(text: str) -> str:
-    return _call(
-        "Proofread the following text. Fix grammar, spelling, and punctuation. Return only the corrected text:",
-        text,
-    )
+    """Fix grammar, spelling, and punctuation using a local T5 model."""
+    pipe = _get_grammar_pipe()
+    prompt = f"Fix grammar: {text}"
+    result = pipe(prompt, max_length=512, num_beams=4, early_stopping=True)
+    return result[0]["generated_text"].strip()
 
 
 def rewrite(text: str) -> str:
-    return _call(
-        "Rewrite the following text for clarity and flow. Keep the meaning. Return only the rewritten text:",
-        text,
-    )
-
-
-def tone(text: str, style: str) -> str:
-    styles = {
-        "professional": "formal and professional",
-        "casual": "friendly and conversational",
-        "concise": "brief and to the point",
-    }
-    descriptor = styles.get(style.lower(), style)
-    return _call(
-        f"Rewrite the following text in a {descriptor} tone. Return only the rewritten text:",
-        text,
-    )
+    """Rephrase text for clarity using a local T5 paraphrase model."""
+    pipe = _get_paraphrase_pipe()
+    prompt = f"paraphrase: {text} </s>"
+    result = pipe(prompt, max_length=512, num_beams=4, early_stopping=True)
+    return result[0]["generated_text"].strip()
