@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HappyText</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="16" fill="#FFD700" stroke="#2A2A2A" stroke-width="1.5"/>
+        <ellipse cx="13" cy="15" rx="2" ry="2.5" fill="#2A2A2A"/>
+        <ellipse cx="23" cy="15" rx="2" ry="2.5" fill="#2A2A2A"/>
+        <path d="M11 21.5C12.5 25 15 26.5 18 26.5C21 26.5 23.5 25 25 21.5" stroke="#2A2A2A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="hero-title">HappyText</h1>
+    <p class="hero-subtitle">Free AI Writing Assistant</p>
+  </div>
+
+  <!-- How to use -->
+  <div class="card instruction-card">
+    <div class="card-row">
+      <span class="step-num">1</span>
+      <span>Select text on any webpage</span>
+    </div>
+    <div class="card-row">
+      <span class="step-num">2</span>
+      <span>Click the <span class="key-badge">smiley</span> or press <span class="key-badge">Alt+Shift+H</span></span>
+    </div>
+    <div class="card-row">
+      <span class="step-num">3</span>
+      <span>Choose <strong>Proofread</strong> or <strong>Rewrite</strong></span>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="section">
+    <div class="section-title">Settings</div>
+
+    <div class="setting-row">
+      <div class="setting-label">Default action</div>
+      <select id="defaultAction" class="setting-select">
+        <option value="ask">Ask every time</option>
+        <option value="proofread">Proofread</option>
+        <option value="rewrite">Rewrite</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">Show trigger button</div>
+      <label class="toggle" for="showTrigger">
+        <input type="checkbox" id="showTrigger" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">Language</div>
+      <select id="language" class="setting-select">
+        <option value="auto">Auto-detect</option>
+        <option value="en-US">English (US)</option>
+        <option value="en-GB">English (UK)</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="pt-BR">Portuguese</option>
+        <option value="it">Italian</option>
+        <option value="nl">Dutch</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="section">
+    <div class="section-title">Status</div>
+    <div class="status-row">
+      <span class="status-dot status-connected" id="ltStatus"></span>
+      <span>LanguageTool</span>
+      <span class="status-label" id="ltLabel">Checking...</span>
+    </div>
+    <div class="status-row">
+      <span class="status-dot status-connected" id="aiStatus"></span>
+      <span>Local AI (Rewrite)</span>
+      <span class="status-label" id="aiLabel">Ready</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>v1.0.0</span>
+    <span class="footer-sep">&middot;</span>
+    <span>Forever free</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

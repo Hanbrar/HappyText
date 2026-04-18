@@ -1,58 +1,66 @@
-# CleanWriteAI
+# HappyText
 
-A lightweight Windows desktop app that lets you highlight text anywhere on your screen, press **Ctrl+D**, and instantly get AI-powered proofreading or rewriting in a small floating popup — no copy-pasting, no switching apps, no API key.
+A free Chrome Extension that lets you select text on any webpage and instantly get AI-powered proofreading or rewriting in a sleek floating panel — no API keys, no accounts, completely free.
 
-Think: Apple Intelligence Writing Tools, but for Windows, completely free, and system-wide.
+Think: Apple Intelligence Writing Tools, but for Chrome.
 
 ---
 
 ## Features
 
-- **Global hotkey** (`Ctrl+D`) — works in any app
+- **Select & fix** — highlight text on any webpage, click the smiley or press `Alt+Shift+H`
 - **Proofread** — fix grammar, spelling, and punctuation
 - **Rewrite** — rephrase for clarity and flow
-- **Replace** the original text in-place, or **Copy** result to clipboard
-- **System tray** — runs quietly in the background
-- **Fully local AI** — no API key, no account, no internet after first launch
+- **Replace** text in-place (editable fields) or **Copy** to clipboard
+- **Right-click** context menu integration
+- **Diff highlighting** — see exactly what changed (red strikethrough / gold additions)
+- **Free forever** — no API keys, no accounts, no subscriptions
 
 ## How It Works
 
-AI runs entirely on your device using Hugging Face Transformers. Models download once on first use (~300 MB) and are cached locally. No data ever leaves your machine.
+HappyText uses a hybrid AI approach — both backends are free:
 
-| Feature | Model |
-|---|---|
-| Proofread | `pszemraj/flan-t5-large-grammar-synthesis` |
-| Rewrite | `Vamsi/T5_Paraphrase_Paws` |
-
-## Setup
-
-1. Download `CleanWriteAI.exe` from Releases
-2. Run it
-3. Highlight any text → press `Ctrl+D` → done
-4. First use downloads the AI model (one-time, ~300 MB)
-
-## Build from Source
-
-```bash
-pip install -r requirements.txt
-build.bat
-```
-
-Output: `dist/CleanWriteAI.exe`
-
-## Hotkey Reference
-
-| Hotkey | App | Status |
+| Feature | Primary | Fallback |
 |---|---|---|
-| `Ctrl+D` | CleanWriteAI | ✅ Assigned |
-| `Ctrl+Alt+Space` | SuperFlow AI (voice dictation) | ❌ Reserved |
-| `Alt+Space` | Windows system menu | ⚠️ Avoided |
+| Proofread | LanguageTool public API (free) | Chrome Built-in AI |
+| Rewrite | Chrome Built-in AI (local Gemini Nano) | LanguageTool corrections |
+
+No data is stored. No accounts required.
+
+## Install
+
+### Chrome Web Store
+Coming soon.
+
+### Developer Mode
+1. Clone this repo
+2. Open `chrome://extensions/`
+3. Enable **Developer mode** (top right)
+4. Click **Load unpacked** and select the project folder
+5. The smiley icon appears in your extensions bar
+
+## Usage
+
+1. Highlight text on any webpage
+2. Click the yellow **smiley button** that appears, or press **`Alt+Shift+H`**, or right-click
+3. Choose **Proofread** or **Rewrite**
+4. Click **Replace** or **Copy**
+
+## Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Alt+Shift+H` | Trigger HappyText on selected text |
+| Right-click | Context menu with Proofread / Rewrite options |
+| `Esc` | Dismiss the panel |
 
 ## Tech Stack
 
-- Python 3.11+, customtkinter UI
-- Hugging Face Transformers (local inference)
-- keyboard, pyperclip, pystray, pyautogui
+- Chrome Extension (Manifest V3)
+- LanguageTool public API (proofreading)
+- Chrome Built-in AI / Prompt API (rewriting)
+- Shadow DOM for style isolation
+- Dark glassmorphism UI with Inter font
 
 ## License
 

@@ -1,0 +1,27 @@
+{
+  "name": "cleanwriteai",
+  "version": "1.0.0",
+  "description": "A free Chrome Extension that lets you select text on any webpage and instantly get AI-powered proofreading or rewriting in a sleek floating panel — no API keys, no accounts, completely free.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hanbrar/CleanWriteAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Hanbrar/CleanWriteAI/issues"
+  },
+  "homepage": "https://github.com/Hanbrar/CleanWriteAI#readme",
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2"
+  }
+}
