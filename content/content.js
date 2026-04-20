@@ -24,10 +24,6 @@
     <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
 
-  const PEN_SVG = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11.5 2.5L13.5 4.5L5.5 12.5L2.5 13.5L3.5 10.5L11.5 2.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-
   // ── State ──
 
   let shadowHost = null;
@@ -194,8 +190,7 @@
       case 'HAPPYTEXT_CONTEXT_MENU':
         lastSelection = message.text;
         removeTrigger();
-        // showPanel with an action triggers loading + processAction internally
-        showPanel(message.action);
+        showPanel('proofread');
         break;
       case 'HAPPYTEXT_SHOW_RESULT':
         showResult(message);
@@ -225,7 +220,7 @@
     const x = rect.left + rect.width / 2;
     const y = rect.top;
 
-    showPanel(null, x, y);
+    showPanel(null, x, y); // shows action panel (proofread button)
   }
 
   // ── Trigger Button ──
@@ -350,10 +345,9 @@
     shadowRoot.appendChild(panel);
     currentPanel = panel;
 
-    // If immediate action, go straight to loading
-    if (immediateAction) {
-      showLoading(immediateAction);
-      processAction(immediateAction);
+    if (immediateAction === 'proofread') {
+      showLoading();
+      processAction();
     } else {
       showActions(content);
     }
@@ -385,27 +379,17 @@
     proofBtn.innerHTML = CHECK_SVG + ' Proofread';
     proofBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      showLoading('proofread');
-      processAction('proofread');
-    });
-
-    const rewriteBtn = document.createElement('button');
-    rewriteBtn.className = 'ht-action-btn';
-    rewriteBtn.innerHTML = PEN_SVG + ' Rewrite';
-    rewriteBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showLoading('rewrite');
-      processAction('rewrite');
+      showLoading();
+      processAction();
     });
 
     actions.appendChild(proofBtn);
-    actions.appendChild(rewriteBtn);
     content.appendChild(actions);
   }
 
   // ── Loading State ──
 
-  function showLoading(action) {
+  function showLoading() {
     const content = getContentArea();
     if (!content) return;
     content.innerHTML = '';
@@ -419,7 +403,7 @@
 
     const text = document.createElement('div');
     text.className = 'ht-loading-text';
-    text.textContent = action === 'proofread' ? 'Proofreading...' : 'Rewriting...';
+    text.textContent = 'Proofreading...';
 
     const bar = document.createElement('div');
     bar.className = 'ht-progress-bar';
@@ -442,7 +426,6 @@
     const corrected = data.corrected || '';
     const noChanges = original === corrected;
 
-    // Result text area
     const resultDiv = document.createElement('div');
     resultDiv.className = 'ht-result';
 
@@ -455,16 +438,12 @@
       noChange.textContent = 'Looks good! No changes needed.';
       resultText.appendChild(noChange);
     } else {
-      // Show diff with staggered word animation
       const diffSegments = diffWords(original, corrected);
       let wordIndex = 0;
       for (const seg of diffSegments) {
         const span = document.createElement('span');
-        if (seg.type === 'removed') {
-          span.className = 'ht-diff-removed';
-        } else if (seg.type === 'added') {
-          span.className = 'ht-diff-added';
-        }
+        if (seg.type === 'removed') span.className = 'ht-diff-removed';
+        else if (seg.type === 'added') span.className = 'ht-diff-added';
         span.textContent = seg.text;
         span.style.animationDelay = (wordIndex * 20) + 'ms';
         resultText.appendChild(span);
@@ -475,7 +454,6 @@
     resultDiv.appendChild(resultText);
     content.appendChild(resultDiv);
 
-    // Action buttons
     if (!noChanges) {
       const actions = document.createElement('div');
       actions.className = 'ht-result-actions';
@@ -507,25 +485,14 @@
         });
       });
 
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'ht-btn-close';
-      closeBtn.textContent = 'Close';
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        removePanel();
-      });
-
       actions.appendChild(replaceBtn);
       actions.appendChild(copyBtn);
-      actions.appendChild(closeBtn);
       content.appendChild(actions);
     }
 
-    // Update header subtitle
     const subtitle = shadowRoot.querySelector('.ht-header-subtitle');
     if (subtitle) {
-      const actionLabel = data.action === 'proofread' ? 'Proofread' : 'Rewrite';
-      subtitle.textContent = noChanges ? `${actionLabel} — Perfect!` : `${actionLabel} Complete`;
+      subtitle.textContent = noChanges ? 'Proofread — Perfect!' : 'Proofread Complete';
       subtitle.style.color = noChanges ? '#4ADE80' : '#FFD700';
     }
   }
@@ -559,14 +526,9 @@
 
   // ── Process Action ──
 
-  /**
-   * All actions go through the service worker.
-   * Proofread: service worker calls LanguageTool API directly.
-   * Rewrite: service worker routes to offscreen Transformers.js (local AI paraphrasing).
-   */
-  function processAction(action) {
+  function processAction() {
     chrome.runtime.sendMessage(
-      { type: 'HAPPYTEXT_PROCESS', text: lastSelection, action },
+      { type: 'HAPPYTEXT_PROCESS', text: lastSelection, action: 'proofread' },
       (response) => {
         if (chrome.runtime.lastError) {
           showError('Lost connection to HappyText. Refresh the page and try again.');
@@ -574,11 +536,9 @@
         }
         if (response?.success) {
           showResult({
-            action,
             original: lastSelection,
             corrected: response.corrected,
-            changes: response.changes,
-            source: response.source
+            changes: response.changes
           });
         } else {
           showError(response?.error || 'Processing failed.');
